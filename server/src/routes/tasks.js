@@ -16,7 +16,9 @@ const canAssign = async (user, targetId) => {
   if (user.role === 'team_lead') return Boolean(await User.exists({ _id: targetId, $or: [{ _id: user._id }, { role: 'employee', teamLead: user._id }] }));
   return user._id.equals(targetId);
 };
-const emit = (req, event, task) => req.app.get('io')?.emit('task:changed', { event, task });
+// Broadcast only the change identity. Each client reloads through its role-scoped API,
+// so task details are never leaked to users who cannot access that task.
+const emit = (req, event, task) => req.app.get('io')?.emit('task:changed', { event, taskId: task.id || task._id });
 
 router.get('/', async (req, res) => {
   const status = req.query.status;

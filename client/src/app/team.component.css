@@ -1,4 +1,5 @@
 @import './app.component.css';
+.task-title-row{display:flex;align-items:center;gap:8px;flex-wrap:wrap}.owner-tag{display:inline-flex;padding:3px 8px;border-radius:999px;background:#ecfdf3;color:#027a48;font-size:.7rem;font-weight:800;line-height:1.2}.owner-tag.lead-tag{background:#eef4ff;color:#3538cd}
 .team-tools{display:flex;align-items:center;gap:10px}.team-tools input{width:230px;margin:0}.task-filters{display:flex;gap:8px}.task-filters select{width:auto;max-width:190px}
 .team-panel{background:#fff;border:1px solid #e4e7ec;border-radius:14px;padding:24px;margin-bottom:26px}
 .team-heading{display:flex;justify-content:space-between;gap:20px;align-items:start;margin-bottom:20px}.team-heading h2{margin:5px 0}.team-count{background:#f2f4f7;color:#475467;padding:6px 10px;border-radius:999px;font-size:.8rem;font-weight:700;white-space:nowrap}

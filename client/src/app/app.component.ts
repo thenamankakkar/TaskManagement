@@ -18,7 +18,7 @@ export class AppComponent implements OnInit, OnDestroy {
     const request = this.authMode === 'login' ? this.api.login({ email: this.f.email.value!, password: this.f.password.value! }) : this.api.register(this.authForm.getRawValue());
     request.subscribe({ next: result => { localStorage.setItem('task_token', result.token); localStorage.setItem('task_user', JSON.stringify(result.user)); this.user = result.user; this.openDashboard(); }, error: e => this.error = e.error?.message || 'We could not complete that request. Please try again.' });
   }
-  openDashboard() { this.load(); this.loadUsers(); this.api.connect(() => this.load(), () => this.loadUsers()); }
+  openDashboard() { this.load(); this.loadUsers(); this.api.connect(() => this.load(), () => { this.loadUsers(); this.load(); }); }
   loadUsers() { this.api.users().subscribe({ next: users => { this.users = users; this.applyTeamLeadFilter(); }, error: () => this.users = [] }); }
   load() { this.api.tasks(this.filter).subscribe({ next: tasks => { this.allTasks = tasks; this.applyTeamLeadFilter(); }, error: e => this.error = e.error?.message || 'Tasks could not be loaded.' }); }
   saveTask() { this.error = ''; if (this.taskForm.invalid) { this.taskForm.markAllAsTouched(); return; } const data = this.taskForm.getRawValue(); const action = this.editing ? this.api.updateTask(this.editing._id, data) : this.api.createTask(data); action.subscribe({ next: () => { this.message = this.editing ? 'Task updated.' : 'Task created.'; this.cancelEdit(); this.load(); }, error: e => this.error = e.error?.message || 'Task could not be saved.' }); }
@@ -38,4 +38,5 @@ export class AppComponent implements OnInit, OnDestroy {
   get displayedTasks() { if (!this.teamLeadFilter) return this.tasks; const memberIds = new Set([this.teamLeadFilter, ...this.employees.filter(employee => this.teamLeadId(employee) === this.teamLeadFilter).map(employee => employee._id)]); return this.tasks.filter(task => memberIds.has(task.assignedTo._id)); }
   teamLeadId(employee: User) { return typeof employee.teamLead === 'string' ? employee.teamLead : employee.teamLead?._id || ''; }
   teamLeadName(employee: User) { if (typeof employee.teamLead === 'object' && employee.teamLead) return employee.teamLead.username; return this.teamLeads.find(lead => lead._id === this.teamLeadId(employee))?.username || 'Unassigned'; }
+  taskTeamLead(task: Task) { if (task.assignedTo.role === 'team_lead') return task.assignedTo.username; const employee = this.users.find(person => person._id === task.assignedTo._id); return employee ? this.teamLeadName(employee) : 'Unassigned'; }
 }
