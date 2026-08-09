@@ -7,7 +7,7 @@ export type Role = 'manager' | 'team_lead' | 'employee';
 export interface User { _id: string; username: string; email: string; role: Role; teamLead?: string | User | null; }
 export interface Task { _id: string; title: string; description: string; status: 'pending' | 'completed'; assignedTo: User; createdBy: User; updatedAt: string; }
 @Injectable({ providedIn: 'root' }) export class ApiService {
-  private readonly base = 'http://localhost:3000/api'; private socket?: Socket;
+  private readonly serverUrl = 'https://taskflowbackend-1uo3.onrender.com'; private readonly base = `${this.serverUrl}/api`; private socket?: Socket;
   constructor(private http: HttpClient) {}
   login(data: { email: string; password: string }) { return this.http.post<{ user: User; token: string }>(`${this.base}/auth/login`, data); }
   register(data: unknown) { return this.http.post<{ user: User; token: string }>(`${this.base}/auth/register`, data); }
@@ -17,6 +17,6 @@ export interface Task { _id: string; title: string; description: string; status:
   createTask(data: unknown) { return this.http.post<Task>(`${this.base}/tasks`, data); }
   updateTask(id: string, data: unknown) { return this.http.patch<Task>(`${this.base}/tasks/${id}`, data); }
   deleteTask(id: string) { return this.http.delete(`${this.base}/tasks/${id}`); }
-  connect(onTaskChange: () => void, onUserChange: () => void) { this.socket?.disconnect(); this.socket = io('http://localhost:3000'); this.socket.on('task:changed', onTaskChange); this.socket.on('user:changed', onUserChange); this.socket.on('connect', () => { onUserChange(); onTaskChange(); }); }
+  connect(onTaskChange: () => void, onUserChange: () => void) { this.socket?.disconnect(); this.socket = io(this.serverUrl); this.socket.on('task:changed', onTaskChange); this.socket.on('user:changed', onUserChange); this.socket.on('connect', () => { onUserChange(); onTaskChange(); }); }
   disconnect() { this.socket?.disconnect(); }
 }

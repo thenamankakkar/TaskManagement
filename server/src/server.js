@@ -14,6 +14,6 @@ try {
   console.error(`${detail}\n${error.message}`);
   process.exit(1);
 }
-const app = createApp(); const server = createServer(app); const io = new Server(server, { cors: { origin: config.clientOrigin } }); app.set('io', io);
+const app = createApp(); const server = createServer(app); const io = new Server(server, { cors: { origin: config.clientOrigins } }); app.set('io', io);
 io.on('connection', socket => socket.emit('connected', { message: 'Live updates enabled.' }));
 server.listen(config.port, () => console.log(`API listening on port ${config.port}`));
