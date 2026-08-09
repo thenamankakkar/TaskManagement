@@ -1,0 +1,71 @@
+{
+  "info": {
+    "_postman_id": "d7b3b3c2-8124-4a9c-8ad9-taskflow-api",
+    "name": "TaskFlow API",
+    "description": "Import this collection into Postman. Start the API first, then run Login to automatically store the JWT.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "baseUrl", "value": "http://localhost:3000/api" },
+    { "key": "token", "value": "" },
+    { "key": "managerId", "value": "" },
+    { "key": "teamLeadId", "value": "" },
+    { "key": "employeeId", "value": "" },
+    { "key": "taskId", "value": "" },
+    { "key": "email", "value": "manager@example.com" },
+    { "key": "password", "value": "Password123!" }
+  ],
+  "item": [
+    {
+      "name": "Authentication",
+      "item": [
+        {
+          "name": "Register Manager",
+          "event": [{ "listen": "test", "script": { "exec": ["const body = pm.response.json();", "pm.collectionVariables.set('managerId', body.user._id);", "pm.collectionVariables.set('token', body.token);"] } }],
+          "request": { "method": "POST", "header": [{ "key": "Content-Type", "value": "application/json" }], "body": { "mode": "raw", "raw": "{\n  \"username\": \"Project Manager\",\n  \"email\": \"{{email}}\",\n  \"password\": \"{{password}}\",\n  \"role\": \"manager\"\n}" }, "url": "{{baseUrl}}/auth/register" }
+        },
+        {
+          "name": "Register Team Lead",
+          "event": [{ "listen": "test", "script": { "exec": ["pm.collectionVariables.set('teamLeadId', pm.response.json().user._id);"] } }],
+          "request": { "method": "POST", "header": [{ "key": "Content-Type", "value": "application/json" }], "body": { "mode": "raw", "raw": "{\n  \"username\": \"Team Lead\",\n  \"email\": \"lead@example.com\",\n  \"password\": \"Password123!\",\n  \"role\": \"team_lead\",\n  \"manager\": \"{{managerId}}\"\n}" }, "url": "{{baseUrl}}/auth/register" }
+        },
+        {
+          "name": "Register Employee",
+          "event": [{ "listen": "test", "script": { "exec": ["pm.collectionVariables.set('employeeId', pm.response.json().user._id);"] } }],
+          "request": { "method": "POST", "header": [{ "key": "Content-Type", "value": "application/json" }], "body": { "mode": "raw", "raw": "{\n  \"username\": \"Employee One\",\n  \"email\": \"employee@example.com\",\n  \"password\": \"Password123!\",\n  \"role\": \"employee\",\n  \"teamLead\": \"{{teamLeadId}}\"\n}" }, "url": "{{baseUrl}}/auth/register" }
+        },
+        {
+          "name": "Login (stores JWT)",
+          "event": [{ "listen": "test", "script": { "exec": ["const body = pm.response.json();", "pm.collectionVariables.set('token', body.token);", "pm.collectionVariables.set('managerId', body.user._id);"] } }],
+          "request": { "method": "POST", "header": [{ "key": "Content-Type", "value": "application/json" }], "body": { "mode": "raw", "raw": "{\n  \"email\": \"{{email}}\",\n  \"password\": \"{{password}}\"\n}" }, "url": "{{baseUrl}}/auth/login" }
+        }
+      ]
+    },
+    {
+      "name": "Users",
+      "item": [
+        { "name": "List Users (role-scoped)", "request": { "method": "GET", "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }], "url": "{{baseUrl}}/users" } }
+      ]
+    },
+    {
+      "name": "Tasks",
+      "item": [
+        {
+          "name": "Create Task",
+          "event": [{ "listen": "test", "script": { "exec": ["pm.collectionVariables.set('taskId', pm.response.json()._id);"] } }],
+          "request": { "method": "POST", "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }, { "key": "Content-Type", "value": "application/json" }], "body": { "mode": "raw", "raw": "{\n  \"title\": \"Prepare sprint plan\",\n  \"description\": \"Prioritise the work for next week.\",\n  \"status\": \"pending\",\n  \"assignedTo\": \"{{employeeId}}\"\n}" }, "url": "{{baseUrl}}/tasks" }
+        },
+        { "name": "List All Accessible Tasks", "request": { "method": "GET", "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }], "url": "{{baseUrl}}/tasks" } },
+        { "name": "List Pending Tasks", "request": { "method": "GET", "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }], "url": "{{baseUrl}}/tasks?status=pending" } },
+        { "name": "Update Task", "request": { "method": "PATCH", "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }, { "key": "Content-Type", "value": "application/json" }], "body": { "mode": "raw", "raw": "{\n  \"title\": \"Prepare and share sprint plan\",\n  \"status\": \"completed\"\n}" }, "url": "{{baseUrl}}/tasks/{{taskId}}" } },
+        { "name": "Delete Task", "request": { "method": "DELETE", "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }], "url": "{{baseUrl}}/tasks/{{taskId}}" } }
+      ]
+    },
+    {
+      "name": "Health",
+      "item": [
+        { "name": "API Health Check", "request": { "method": "GET", "url": "{{baseUrl}}/health" } }
+      ]
+    }
+  ]
+}

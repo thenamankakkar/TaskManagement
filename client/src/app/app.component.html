@@ -1,0 +1,28 @@
+<main class="shell">
+  <section *ngIf="!user" class="auth-card">
+    <p class="eyebrow">TASKFLOW</p><h1>Keep work moving.</h1><p class="muted">A calm, shared space for your team’s tasks.</p>
+    <div class="tabs"><button [class.active]="authMode === 'login'" (click)="authMode = 'login'">Sign in</button><button [class.active]="authMode === 'register'" (click)="authMode = 'register'">Create account</button></div>
+    <form [formGroup]="authForm" (ngSubmit)="submitAuth()" novalidate>
+      <label *ngIf="authMode === 'register'">Name<input formControlName="username" autocomplete="name"><small *ngIf="f.username.touched && f.username.invalid">Enter 2–50 characters.</small></label>
+      <label>Email<input formControlName="email" type="email" autocomplete="email"><small *ngIf="f.email.touched && f.email.invalid">Enter a valid email address.</small></label>
+      <label>Password<input formControlName="password" type="password" autocomplete="current-password"><small *ngIf="f.password.touched && f.password.invalid">Use at least 8 characters.</small></label>
+      <label *ngIf="authMode === 'register'">Role<select formControlName="role"><option value="employee">Employee</option><option value="team_lead">Team Lead</option><option value="manager">Manager</option></select></label>
+      <p *ngIf="error" class="alert error">{{ error }}</p><button class="primary" type="submit">{{ authMode === 'login' ? 'Sign in' : 'Create account' }}</button>
+    </form>
+  </section>
+  <ng-container *ngIf="user">
+    <header><div><p class="eyebrow">TASKFLOW</p><h1>Good to see you, {{ user.username }}.</h1><p class="muted">{{ user.role.replace('_', ' ') | titlecase }} · changes sync live</p></div><button class="text-button" (click)="logout()">Sign out</button></header>
+    <p *ngIf="error" class="alert error">{{ error }}</p><p *ngIf="message" class="alert success">{{ message }}</p>
+    <section class="workspace"><form class="task-form" [formGroup]="taskForm" (ngSubmit)="saveTask()" novalidate><h2>{{ editing ? 'Edit task' : 'Add a task' }}</h2>
+      <label>Title<input formControlName="title" placeholder="What needs doing?"><small *ngIf="t.title.touched && t.title.invalid">A title must be 3–120 characters.</small></label>
+      <label>Description<textarea formControlName="description" rows="4" placeholder="Add a little context (optional)"></textarea><small *ngIf="t.description.touched && t.description.invalid">Keep it under 1,000 characters.</small></label>
+      <label>Status<select formControlName="status"><option value="pending">Pending</option><option value="completed">Completed</option></select></label>
+      <label *ngIf="canAssign()">Assign to<select formControlName="assignedTo"><option value="">Myself</option><option *ngFor="let person of users" [value]="person._id">{{ person.username }} — {{ person.role.replace('_', ' ') }}</option></select></label>
+      <div class="actions"><button class="primary" type="submit">{{ editing ? 'Save changes' : 'Create task' }}</button><button *ngIf="editing" type="button" (click)="cancelEdit()">Cancel</button></div>
+    </form>
+    <section class="task-list"><div class="list-heading"><div><h2>Your tasks</h2><span>{{ tasks.length }} showing</span></div><select [value]="filter" (change)="setFilter($any($event.target).value)"><option value="">All statuses</option><option value="pending">Pending</option><option value="completed">Completed</option></select></div>
+      <article *ngFor="let task of tasks" class="task" [class.done]="task.status === 'completed'"><div class="task-copy"><button class="check" [attr.aria-label]="'Toggle ' + task.title" (click)="complete(task)">{{ task.status === 'completed' ? '✓' : '' }}</button><div><h3>{{ task.title }}</h3><p>{{ task.description || 'No description provided.' }}</p><span>Assigned to {{ task.assignedTo.username }} · Updated {{ task.updatedAt | date:'mediumDate' }}</span></div></div><div class="task-actions"><button (click)="edit(task)">Edit</button><button class="danger" (click)="remove(task)">Delete</button></div></article>
+      <div *ngIf="!tasks.length" class="empty">No tasks here yet. Start with the form on the left.</div>
+    </section></section>
+  </ng-container>
+</main>
