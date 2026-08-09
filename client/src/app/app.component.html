@@ -13,6 +13,17 @@
   <ng-container *ngIf="user">
     <header><div><p class="eyebrow">TASKFLOW</p><h1>Good to see you, {{ user.username }}.</h1><p class="muted">{{ user.role.replace('_', ' ') | titlecase }} · changes sync live</p></div><button class="text-button" (click)="logout()">Sign out</button></header>
     <p *ngIf="error" class="alert error">{{ error }}</p><p *ngIf="message" class="alert success">{{ message }}</p>
+    <section *ngIf="user.role === 'manager'" class="team-panel">
+      <div class="team-heading"><div><p class="eyebrow">TEAM SETUP</p><h2>Employee assignments</h2><p class="muted">Choose who each employee reports to. Changes save automatically.</p></div><span class="team-count">{{ employees.length }} employees</span></div>
+      <div *ngIf="employees.length; else noEmployees" class="employee-grid">
+        <article *ngFor="let employee of employees" class="employee-card">
+          <div class="employee-avatar">{{ employee.username.charAt(0) | uppercase }}</div>
+          <div class="employee-info"><strong>{{ employee.username }}</strong><span>{{ employee.email }}</span><span class="assignment-status" [class.assigned]="teamLeadId(employee)">{{ teamLeadId(employee) ? 'Assigned to ' + teamLeadName(employee) : 'Not assigned to a team' }}</span></div>
+          <label>Team Lead<select [value]="teamLeadId(employee)" (change)="assignTeamLead(employee, $any($event.target).value)"><option value="">No Team Lead</option><option *ngFor="let lead of teamLeads" [value]="lead._id" [selected]="lead._id === teamLeadId(employee)">{{ lead.username }}</option></select></label>
+        </article>
+      </div>
+      <ng-template #noEmployees><div class="empty compact">No employee accounts are available yet.</div></ng-template>
+    </section>
     <section class="workspace"><form class="task-form" [formGroup]="taskForm" (ngSubmit)="saveTask()" novalidate><h2>{{ editing ? 'Edit task' : 'Add a task' }}</h2>
       <label>Title<input formControlName="title" placeholder="What needs doing?"><small *ngIf="t.title.touched && t.title.invalid">A title must be 3–120 characters.</small></label>
       <label>Description<textarea formControlName="description" rows="4" placeholder="Add a little context (optional)"></textarea><small *ngIf="t.description.touched && t.description.invalid">Keep it under 1,000 characters.</small></label>

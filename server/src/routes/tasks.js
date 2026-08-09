@@ -8,12 +8,12 @@ const router = Router(); router.use(requireAuth);
 const taskSchema = z.object({ title: z.string().trim().min(3, 'Title needs at least 3 characters.').max(120), description: z.string().trim().max(1000).optional(), status: z.enum(['pending', 'completed']).optional(), assignedTo: z.string().optional() });
 const idsFor = async user => {
   if (user.role === 'manager') return null;
-  if (user.role === 'team_lead') return User.find({ $or: [{ _id: user._id }, { teamLead: user._id }] }).distinct('_id');
+  if (user.role === 'team_lead') return User.find({ $or: [{ _id: user._id }, { role: 'employee', teamLead: user._id }] }).distinct('_id');
   return [user._id];
 };
 const canAssign = async (user, targetId) => {
   if (user.role === 'manager') return Boolean(await User.exists({ _id: targetId }));
-  if (user.role === 'team_lead') return Boolean(await User.exists({ _id: targetId, $or: [{ _id: user._id }, { teamLead: user._id }] }));
+  if (user.role === 'team_lead') return Boolean(await User.exists({ _id: targetId, $or: [{ _id: user._id }, { role: 'employee', teamLead: user._id }] }));
   return user._id.equals(targetId);
 };
 const emit = (req, event, task) => req.app.get('io')?.emit('task:changed', { event, task });

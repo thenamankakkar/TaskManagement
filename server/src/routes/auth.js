@@ -15,6 +15,7 @@ router.post('/register', async (req, res) => {
   const { email } = parsed.data;
   if (await User.exists({ email: email.toLowerCase() })) return res.status(409).json({ message: 'An account with that email already exists.' });
   const user = await User.create(parsed.data);
+  req.app.get('io')?.emit('user:changed', { event: 'created', userId: user.id, role: user.role });
   res.status(201).json({ user, token: tokenFor(user) });
 });
 router.post('/login', async (req, res) => {
